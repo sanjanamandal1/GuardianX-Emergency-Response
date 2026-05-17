@@ -1,4 +1,4 @@
-# 🛡️ SafeSignal – Smart SOS Alert Platform
+# 🛡️ GuardianX – Emergency Response System
 
 > *Inspired by increasing concerns around personal safety and emergency response accessibility.*
 
@@ -13,7 +13,7 @@
 
 People in danger often **cannot call for help openly**. A victim of harassment, domestic abuse, or street crime may be watched, threatened, or unable to speak freely. Traditional emergency calls require time, visibility, and voice — all of which may be unavailable in critical moments.
 
-**SafeSignal** is a console-based safety application that simulates a real-world silent emergency response system — detecting distress patterns, managing emergency contacts, and escalating alerts based on danger level.
+**GuardianX** is a console-based safety application that simulates a real-world silent emergency response system — detecting distress patterns, managing emergency contacts, and escalating alerts based on danger level.
 
 ---
 
@@ -29,7 +29,7 @@ People in danger often **cannot call for help openly**. A victim of harassment, 
 | 🗺️ Unsafe Zone Tracking | Flag and monitor dangerous zones; auto-warns when nearby |
 | 📊 Danger Level Analysis | 1–5 scale with pattern-based escalation and safety recommendations |
 | 📋 Alert History | Full timestamped log of all events in-session |
-| 💾 File Export | Append-mode log export to `safesignal_log.txt` |
+| 💾 File Export | Append-mode log export to `guardianx_log.txt` |
 
 ### Smart Behaviours
 - **Repeated Distress Detection** — if distress keywords appear 3+ times, danger escalates automatically
@@ -69,14 +69,14 @@ Date/Time      : java.time.LocalDateTime, DateTimeFormatter
 ## 📁 Project Structure
 
 ```
-SafeSignal/
+GuardianX-Emergency-Response/
 │
 ├── .github/
 │   └── workflows/
 │       └── build.yml        ← Auto-compiles on every push
 │
-├── SafeSignal.java          ← Single-file application (all classes inside)
-├── safesignal_log.txt       ← Auto-generated at runtime
+├── emergency.java           ← Main application (all classes inside)
+├── guardianx_log.txt        ← Auto-generated at runtime
 ├── .gitignore
 └── README.md
 ```
@@ -87,10 +87,10 @@ SafeSignal/
 
 ```bash
 # Compile
-javac SafeSignal.java
+javac emergency.java
 
 # Run
-java SafeSignal
+java emergency
 ```
 
 ---
@@ -101,7 +101,7 @@ java SafeSignal
 2. **Set location** — type a zone name like `Dark Alley Rd` to trigger a zone warning
 3. **Keyword check** — type `help` three times to trigger repeated distress escalation
 4. **SOS** — triggers contact notification and logs the event
-5. **Export** — saves the full session log to `safesignal_log.txt`
+5. **Export** — saves the full session log to `guardianx_log.txt`
 
 ---
 
