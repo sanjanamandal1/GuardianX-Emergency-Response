@@ -1,4 +1,12 @@
-name: Build SafeSignal
+name: Build GuardianX-Emergency-Response/.github/workflows
+/
+build.yml
+in
+main
+
+Edit
+
+Preview
 
 on:
   push:
