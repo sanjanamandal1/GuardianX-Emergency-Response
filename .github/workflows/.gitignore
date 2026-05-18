@@ -6,7 +6,7 @@ out/
 
 # Log files
 *.log
-safesignal_log.txt
+emergency_log.txt
 
 # Package files
 *.jar
