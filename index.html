@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuardianX – Emergency Response System</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #FF2D2D;
+  --red-dim: #8B0000;
+  --red-glow: rgba(255,45,45,0.18);
+  --bg: #0A0A0A;
+  --bg2: #111111;
+  --bg3: #1A1A1A;
+  --border: rgba(255,255,255,0.07);
+  --text: #F0EDE8;
+  --text-dim: #7A7672;
+  --text-mid: #B0ABA5;
+  --green: #2EFF7A;
+  --amber: #FFB800;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Syne', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* SCAN LINE OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* GRID BG */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(255,45,45,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,45,45,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0 40px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 40px;
+  animation: fadeDown .6s ease both;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-icon {
+  width: 44px; height: 44px;
+  border: 2px solid var(--red);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  position: relative;
+  overflow: hidden;
+  animation: pulse-border 2.5s ease infinite;
+}
+
+@keyframes pulse-border {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,45,45,0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(255,45,45,0); }
+}
+
+.logo-text { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.logo-text span { color: var(--red); }
+.logo-sub { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; margin-top: 2px; }
+
+.status-row { display: flex; align-items: center; gap: 10px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: blink 1.8s ease infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.status-text { font-family: var(--mono); font-size: 11px; color: var(--green); letter-spacing: 1px; }
+
+/* ── DANGER BAR ── */
+.danger-strip {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  border-radius: 10px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  margin-bottom: 28px;
+  animation: fadeUp .5s .1s ease both;
+}
+
+.danger-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 2px; white-space: nowrap; }
+.danger-track { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+.danger-fill { height: 100%; border-radius: 3px; transition: width .6s cubic-bezier(.4,0,.2,1), background .4s; }
+.danger-num { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--red); white-space: nowrap; min-width: 40px; }
+.danger-label-right { font-size: 12px; color: var(--text-mid); white-space: nowrap; min-width: 80px; }
+
+/* ── GRID ── */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 16px; }
+
+/* ── CARD ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px;
+  animation: fadeUp .5s ease both;
+}
+.card.red-border { border-left: 3px solid var(--red); }
+.card.green-border { border-left: 3px solid var(--green); }
+.card.amber-border { border-left: 3px solid var(--amber); }
+
+.card-hd {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-hd::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background: var(--red); }
+.card-hd.green::before { background: var(--green); }
+.card-hd.amber::before { background: var(--amber); }
+
+/* ── SOS BUTTON ── */
+.sos-btn {
+  width: 100%;
+  padding: 18px;
+  background: var(--red);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s, background .2s;
+}
+.sos-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+}
+.sos-btn:hover { transform: scale(1.02); }
+.sos-btn:active { transform: scale(0.97); }
+.sos-btn.fired { background: var(--red-dim); animation: shake .4s ease; }
+
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-6px)}
+  40%{transform:translateX(6px)}
+  60%{transform:translateX(-4px)}
+  80%{transform:translateX(4px)}
+}
+
+/* ── TOGGLE ── */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.toggle-row:last-child { border-bottom: none; }
+.toggle-label { font-size: 13px; color: var(--text-mid); }
+.toggle { width: 38px; height: 22px; background: var(--bg3); border-radius: 11px; position: relative; cursor: pointer; border: 1px solid var(--border); transition: background .2s; flex-shrink: 0; }
+.toggle.on { background: var(--red); border-color: var(--red); }
+.toggle-knob { width: 16px; height: 16px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: left .2s; }
+.toggle.on .toggle-knob { left: 18px; }
+
+/* ── INPUT ── */
+input[type=text] {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 11px 14px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  outline: none;
+  transition: border-color .2s;
+  margin-bottom: 10px;
+}
+input[type=text]:focus { border-color: var(--red); }
+input[type=text]::placeholder { color: var(--text-dim); }
+
+.btn {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 16px;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
+}
+.btn:hover { background: var(--bg); border-color: var(--red); color: var(--red); }
+.btn-full { width: 100%; }
+
+/* ── CONTACT ROW ── */
+.contact-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.contact-row:last-child { border-bottom: none; }
+.avatar {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.av-r { background: rgba(255,45,45,0.15); color: var(--red); }
+.av-g { background: rgba(46,255,122,0.1); color: var(--green); }
+.av-a { background: rgba(255,184,0,0.1); color: var(--amber); }
+.contact-info { flex: 1; }
+.contact-name { font-size: 13px; font-weight: 600; }
+.contact-sub { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+.priority-tag { font-family: var(--mono); font-size: 10px; padding: 3px 7px; border-radius: 4px; background: rgba(255,45,45,0.12); color: var(--red); }
+
+/* ── ZONE ROW ── */
+.zone-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.zone-row:last-child { border-bottom: none; }
+.zone-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); margin-top: 4px; flex-shrink: 0; }
+.zone-dot.off { background: var(--text-dim); }
+.zone-name { font-size: 13px; font-weight: 600; }
+.zone-reason { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.zone-badge { font-family: var(--mono); font-size: 10px; padding: 2px 7px; border-radius: 4px; margin-left: auto; white-space: nowrap; }
+.zone-badge.active { background: rgba(255,45,45,0.12); color: var(--red); }
+.zone-badge.inactive { background: var(--bg3); color: var(--text-dim); }
+
+/* ── LOG ── */
+.log-item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  animation: slideIn .3s ease both;
+}
+.log-item:last-child { border-bottom: none; }
+@keyframes slideIn { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+.log-top { display: flex; align-items: center; gap: 8px; margin-bottom: 3px; }
+.log-type { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+.lt-sos { background: rgba(255,45,45,0.15); color: var(--red); }
+.lt-kw { background: rgba(255,184,0,0.12); color: var(--amber); }
+.lt-rep { background: rgba(255,45,45,0.25); color: #ff6b6b; }
+.log-time { font-family: var(--mono); font-size: 10px; color: var(--text-dim); margin-left: auto; }
+.log-detail { font-size: 12px; color: var(--text-mid); }
+
+/* ── KW RESULT ── */
+.kw-result { font-family: var(--mono); font-size: 12px; min-height: 18px; margin-top: 6px; }
+.kw-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.kw-tag { font-family: var(--mono); font-size: 10px; padding: 3px 9px; background: rgba(255,45,45,0.08); border: 1px solid rgba(255,45,45,0.2); border-radius: 4px; color: var(--red); }
+
+/* ── STAT CARDS ── */
+.stat-val { font-family: var(--mono); font-size: 28px; font-weight: 700; color: var(--text); margin: 4px 0 2px; }
+.stat-label { font-family: var(--mono); font-size: 10px; color: var(--text-dim); letter-spacing: 1.5px; }
+
+/* ── EMPTY ── */
+.empty { font-family: var(--mono); font-size: 11px; color: var(--text-dim); padding: 10px 0; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+  padding-top: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+footer a { color: var(--red); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: var(--bg2);
+  border: 1px solid var(--red);
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text);
+  z-index: 9999;
+  transform: translateY(80px);
+  opacity: 0;
+  transition: transform .3s ease, opacity .3s ease;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:none} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
+
+/* stagger cards */
+.card:nth-child(1){animation-delay:.05s}
+.card:nth-child(2){animation-delay:.1s}
+.card:nth-child(3){animation-delay:.15s}
+.card:nth-child(4){animation-delay:.2s}
+
+/* ── ALERT FLASH ── */
+@keyframes flash-red {
+  0%,100%{background:var(--bg2)}
+  30%{background:rgba(255,45,45,0.12)}
+}
+.flash { animation: flash-red .6s ease; }
+
+@media(max-width:700px){
+  .grid,.grid-3{grid-template-columns:1fr;}
+  .danger-strip{flex-wrap:wrap;gap:12px;}
+  header{flex-direction:column;align-items:flex-start;gap:12px;}
+  footer{flex-direction:column;gap:8px;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🛡️</div>
+      <div>
+        <div class="logo-text">Guardian<span>X</span></div>
+        <div class="logo-sub">EMERGENCY RESPONSE SYSTEM</div>
+      </div>
+    </div>
+    <div class="status-row">
+      <div class="dot" id="status-dot"></div>
+      <div class="status-text" id="status-text">SYSTEM ACTIVE</div>
+    </div>
+  </header>
+
+  <!-- DANGER BAR -->
+  <div class="danger-strip">
+    <div class="danger-label">DANGER LEVEL</div>
+    <div class="danger-track"><div class="danger-fill" id="danger-fill" style="width:20%;background:#2EFF7A;"></div></div>
+    <div class="danger-num" id="danger-num">1</div>
+    <div class="danger-label-right" id="danger-label">SAFE</div>
+  </div>
+
+  <!-- STAT ROW -->
+  <div class="grid-3">
+    <div class="card" style="padding:16px 22px;">
+      <div class="stat-label">DISTRESS COUNT</div>
+      <div class="stat-val" id="distress-count">0</div>
+    </div>
+    <div class="card" style="padding:16px 22px;">
+      <div class="stat-label">ALERTS LOGGED</div>
+      <div class="stat-val" id="alert-count">0</div>
+    </div>
+    <div class="card" style="padding:16px 22px;">
+      <div class="stat-label">LOCATION</div>
+      <div style="font-family:var(--mono);font-size:13px;font-weight:600;margin-top:6px;color:var(--text-mid);" id="location-val">Not set</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="grid">
+
+    <!-- LEFT COL -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- SOS -->
+      <div class="card red-border">
+        <div class="card-hd">SOS ALERT</div>
+        <button class="sos-btn" id="sos-btn" onclick="triggerSOS()">🆘 TRIGGER EMERGENCY ALERT</button>
+        <div style="margin-top:14px;">
+          <div class="toggle-row">
+            <span class="toggle-label">Silent mode</span>
+            <div class="toggle" id="toggle-silent" onclick="toggleSilent()"><div class="toggle-knob"></div></div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">Priority escalation</span>
+            <div class="toggle on" id="toggle-escl" onclick="toggleEscl()"><div class="toggle-knob"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- KEYWORD -->
+      <div class="card amber-border">
+        <div class="card-hd amber">DISTRESS KEYWORD DETECTOR</div>
+        <input type="text" id="kw-input" placeholder='type "help", "sos", "danger", "scared"...' />
+        <button class="btn btn-full" onclick="checkKeyword()">Analyze Message</button>
+        <div class="kw-result" id="kw-result"></div>
+        <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:1px;margin-bottom:8px;">MONITORED KEYWORDS</div>
+        <div class="kw-tags" id="kw-tags"></div>
+      </div>
+
+      <!-- LOCATION -->
+      <div class="card">
+        <div class="card-hd">LOCATION</div>
+        <input type="text" id="loc-input" placeholder="Enter location or leave blank for GPS simulation" />
+        <button class="btn btn-full" onclick="setLocation()">Update Location</button>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COL -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+      <!-- CONTACTS -->
+      <div class="card green-border">
+        <div class="card-hd green">EMERGENCY CONTACTS</div>
+        <div id="contact-list"></div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+          <input type="text" id="c-name" placeholder="Name" />
+          <input type="text" id="c-phone" placeholder="Phone number" />
+          <input type="text" id="c-rel" placeholder="Relationship (e.g. Mother, Friend)" />
+          <button class="btn btn-full" onclick="addContact()">+ Add Contact</button>
+        </div>
+      </div>
+
+      <!-- ZONES -->
+      <div class="card">
+        <div class="card-hd">UNSAFE ZONES</div>
+        <div id="zone-list"></div>
+        <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px;">
+          <input type="text" id="z-name" placeholder="Zone name (e.g. Dark Alley Rd)" />
+          <input type="text" id="z-reason" placeholder="Reason for flagging" />
+          <button class="btn btn-full" onclick="addZone()">+ Flag Zone</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- HISTORY LOG -->
+  <div class="card" style="animation-delay:.25s;">
+    <div class="card-hd" style="margin-bottom:12px;">ALERT HISTORY LOG</div>
+    <div id="history-list"><div class="empty">No alerts recorded yet. System is monitoring.</div></div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>GuardianX Emergency Response System &nbsp;·&nbsp; v1.0 &nbsp;·&nbsp; Java Console → Web</div>
+    <div>Built by <a href="https://github.com/sanjanamandal1" target="_blank">Sanjana Mandal</a> &nbsp;·&nbsp; <a href="https://github.com/sanjanamandal1/GuardianX-Emergency-Response" target="_blank">GitHub</a></div>
+  </footer>
+
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+var S = {
+  danger: 1,
+  distress: 0,
+  silent: false,
+  escalation: true,
+  location: 'Not set',
+  history: [],
+  contacts: [
+    { name: 'Mom', phone: '+91-98765-11111', rel: 'Mother', priority: 1, cls: 'av-r', init: 'M' },
+    { name: 'Best Friend', phone: '+91-98765-22222', rel: 'Friend', priority: 2, cls: 'av-g', init: 'BF' },
+    { name: 'Police', phone: '100', rel: 'Emergency', priority: 1, cls: 'av-a', init: 'P' }
+  ],
+  zones: [
+    { name: 'Dark Alley Rd', reason: 'Poor lighting / reported incidents', active: true },
+    { name: 'Abandoned Market', reason: 'No CCTV coverage', active: true }
+  ],
+  keywords: ['help','sos','emergency','danger','save me','scared','threat','attack','call police','im in danger']
+};
+
+var dangerColors = ['','#2EFF7A','#FFB800','#FF8C00','#FF2D2D','#8B0000'];
+var dangerLabels = ['','SAFE','CAUTION','WARNING','DANGER','EXTREME'];
+
+function now() {
+  return new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+function updateDanger() {
+  var pct = (S.danger/5)*100;
+  var fill = document.getElementById('danger-fill');
+  fill.style.width = pct + '%';
+  fill.style.background = dangerColors[S.danger];
+  document.getElementById('danger-num').textContent = S.danger;
+  document.getElementById('danger-num').style.color = dangerColors[S.danger];
+  document.getElementById('danger-label').textContent = dangerLabels[S.danger];
+  document.getElementById('danger-label').style.color = dangerColors[S.danger];
+  document.getElementById('distress-count').textContent = S.distress;
+  document.getElementById('alert-count').textContent = S.history.length;
+  document.getElementById('location-val').textContent = S.location;
+}
+
+function escalate(n) {
+  S.danger = Math.min(5, S.danger + n);
+  updateDanger();
+  var strip = document.querySelector('.danger-strip');
+  strip.classList.remove('flash');
+  void strip.offsetWidth;
+  strip.classList.add('flash');
+}
+
+function showToast(msg, duration) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, duration || 2800);
+}
+
+function addEvent(type, detail, level, cls) {
+  S.history.unshift({ type: type, detail: detail, level: level, time: now(), cls: cls });
+  renderHistory();
+  updateDanger();
+}
+
+/* ── SOS ── */
+function triggerSOS() {
+  S.distress++;
+  escalate(2);
+  var detail = 'Manual SOS · ' + S.location + (S.silent ? ' [SILENT]' : '');
+  addEvent('SOS', detail, S.danger, 'lt-sos');
+  var btn = document.getElementById('sos-btn');
+  btn.textContent = S.silent ? '🔇 Silent alert sent to all contacts' : '✔ Alert sent to ' + S.contacts.length + ' contacts';
+  btn.classList.add('fired');
+  showToast(S.contacts.length + ' contact(s) notified' + (S.silent ? ' silently' : '') + ' · Danger: ' + S.danger + '/5');
+  setTimeout(function(){
+    btn.innerHTML = '🆘 TRIGGER EMERGENCY ALERT';
+    btn.classList.remove('fired');
+  }, 3000);
+}
+
+/* ── SILENT ── */
+function toggleSilent() {
+  S.silent = !S.silent;
+  var t = document.getElementById('toggle-silent');
+  t.classList.toggle('on', S.silent);
+  showToast('Silent mode ' + (S.silent ? 'ENABLED' : 'DISABLED'));
+}
+function toggleEscl() {
+  S.escalation = !S.escalation;
+  document.getElementById('toggle-escl').classList.toggle('on', S.escalation);
+  showToast('Priority escalation ' + (S.escalation ? 'ON' : 'OFF'));
+}
+
+/* ── KEYWORD ── */
+function checkKeyword() {
+  var input = document.getElementById('kw-input').value.trim().toLowerCase();
+  var res = document.getElementById('kw-result');
+  if (!input) return;
+  var found = S.keywords.filter(function(k){ return input.includes(k); });
+  if (found.length) {
+    S.distress++;
+    escalate(1);
+    var type = S.distress >= 3 ? 'REPEAT' : 'KEYWORD';
+    var cls = S.distress >= 3 ? 'lt-rep' : 'lt-kw';
+    var detail = '"' + found[0] + '" detected' + (S.distress >= 3 ? ' — REPEATED PATTERN' : '');
+    addEvent(type, detail, S.danger, cls);
+    res.innerHTML = '<span style="color:var(--red);">🚨 Distress detected: ' + found.join(', ') + (S.distress >= 3 ? ' — Escalating!' : '') + '</span>';
+    showToast('Distress keyword detected · Count: ' + S.distress);
+  } else {
+    res.innerHTML = '<span style="color:var(--green);">✔ No distress keywords found.</span>';
+  }
+  document.getElementById('kw-input').value = '';
+}
+document.getElementById('kw-input').addEventListener('keydown', function(e){ if(e.key==='Enter') checkKeyword(); });
+
+/* ── LOCATION ── */
+function setLocation() {
+  var v = document.getElementById('loc-input').value.trim();
+  if (!v) {
+    var lat = (22 + Math.random()*5).toFixed(4);
+    var lon = (88 + Math.random()*5).toFixed(4);
+    S.location = 'GPS ' + lat + '°N, ' + lon + '°E';
+  } else {
+    S.location = v;
+  }
+  document.getElementById('location-val').textContent = S.location;
+  document.getElementById('loc-input').value = '';
+  // Check zones
+  S.zones.forEach(function(z){
+    if (z.active && S.location.toLowerCase().includes(z.name.toLowerCase())) {
+      escalate(1);
+      showToast('⚠ Unsafe zone detected: ' + z.name, 4000);
+      addEvent('ZONE ALERT', 'Near: ' + z.name + ' — ' + z.reason, S.danger, 'lt-sos');
+    }
+  });
+  showToast('Location updated: ' + S.location);
+}
+document.getElementById('loc-input').addEventListener('keydown', function(e){ if(e.key==='Enter') setLocation(); });
+
+/* ── CONTACTS ── */
+function addContact() {
+  var name = document.getElementById('c-name').value.trim();
+  var phone = document.getElementById('c-phone').value.trim();
+  var rel = document.getElementById('c-rel').value.trim();
+  if (!name || !phone) { showToast('Name and phone are required'); return; }
+  var cls = ['av-r','av-g','av-a'][S.contacts.length % 3];
+  S.contacts.push({ name: name, phone: phone, rel: rel || 'Contact', priority: S.contacts.length + 1, cls: cls, init: name.slice(0,2).toUpperCase() });
+  document.getElementById('c-name').value = '';
+  document.getElementById('c-phone').value = '';
+  document.getElementById('c-rel').value = '';
+  renderContacts();
+  showToast('Contact added: ' + name);
+}
+
+function renderContacts() {
+  var el = document.getElementById('contact-list');
+  if (!S.contacts.length) { el.innerHTML = '<div class="empty">No contacts saved.</div>'; return; }
+  el.innerHTML = S.contacts.map(function(c){
+    return '<div class="contact-row">' +
+      '<div class="avatar ' + c.cls + '">' + c.init + '</div>' +
+      '<div class="contact-info">' +
+        '<div class="contact-name">' + c.name + '</div>' +
+        '<div class="contact-sub">' + c.rel + ' · ' + c.phone + '</div>' +
+      '</div>' +
+      '<div class="priority-tag">P' + c.priority + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ── ZONES ── */
+function addZone() {
+  var name = document.getElementById('z-name').value.trim();
+  var reason = document.getElementById('z-reason').value.trim();
+  if (!name) { showToast('Zone name is required'); return; }
+  S.zones.push({ name: name, reason: reason || 'Flagged by user', active: true });
+  document.getElementById('z-name').value = '';
+  document.getElementById('z-reason').value = '';
+  renderZones();
+  showToast('Zone flagged: ' + name);
+}
+
+function renderZones() {
+  var el = document.getElementById('zone-list');
+  if (!S.zones.length) { el.innerHTML = '<div class="empty">No unsafe zones marked.</div>'; return; }
+  el.innerHTML = S.zones.map(function(z, i){
+    return '<div class="zone-row" onclick="toggleZone(' + i + ')" style="cursor:pointer;">' +
+      '<div class="zone-dot' + (z.active ? '' : ' off') + '"></div>' +
+      '<div style="flex:1;">' +
+        '<div class="zone-name">' + z.name + '</div>' +
+        '<div class="zone-reason">' + z.reason + '</div>' +
+      '</div>' +
+      '<div class="zone-badge ' + (z.active ? 'active' : 'inactive') + '">' + (z.active ? 'ACTIVE' : 'OFF') + '</div>' +
+    '</div>';
+  }).join('');
+}
+function toggleZone(i) {
+  S.zones[i].active = !S.zones[i].active;
+  renderZones();
+}
+
+/* ── HISTORY ── */
+function renderHistory() {
+  var el = document.getElementById('history-list');
+  if (!S.history.length) { el.innerHTML = '<div class="empty">No alerts recorded yet. System is monitoring.</div>'; return; }
+  el.innerHTML = S.history.map(function(h){
+    return '<div class="log-item">' +
+      '<div class="log-top">' +
+        '<span class="log-type ' + h.cls + '">' + h.type + '</span>' +
+        '<span style="font-size:11px;color:var(--text-dim);font-family:var(--mono);">Level ' + h.level + '/5</span>' +
+        '<span class="log-time">' + h.time + '</span>' +
+      '</div>' +
+      '<div class="log-detail">' + h.detail + '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ── KW TAGS ── */
+function renderKwTags() {
+  document.getElementById('kw-tags').innerHTML = S.keywords.map(function(k){
+    return '<span class="kw-tag">' + k + '</span>';
+  }).join('');
+}
+
+/* ── INIT ── */
+renderContacts();
+renderZones();
+renderKwTags();
+updateDanger();
+</script>
+</body>
+</html>
