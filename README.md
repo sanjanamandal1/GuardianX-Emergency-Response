@@ -7,6 +7,8 @@
 ![Build](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
+🌐 Live Demo: https://sanjanamandal1.github.io/GuardianX-Emergency-Response/
+
 ---
 
 ## 🎯 Problem Statement
