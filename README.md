@@ -130,10 +130,6 @@ Building this as a Java console application demonstrates an understanding of the
 ## 👩‍💻 Author
 
 **Sanjana Mandal**  
-B.Tech CSE (AI & ML) — VIT Bhopal  
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/sanjanam09/)
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/sanjanamandal1)
-
 ---
 
 > *"Code can save lives — when built with empathy."*
