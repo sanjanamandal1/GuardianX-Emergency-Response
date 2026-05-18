@@ -28,8 +28,8 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Compile SafeSignal
-        run: javac SafeSignal.java -d out/
+      - name: Compile emergency
+        run: javac emergency.java -d out/
 
       - name: Confirm build success
-        run: echo "SafeSignal compiled successfully!"
+        run: echo "Emergency compiled successfully!"
