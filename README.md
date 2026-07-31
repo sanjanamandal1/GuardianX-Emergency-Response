@@ -19,7 +19,7 @@ People in danger often **cannot call for help openly**. A victim of harassment, 
 
 ---
 
-## ✨ Features
+##  Features
 
 | Feature | Description |
 |---|---|
